@@ -117,7 +117,7 @@ RegisterNUICallback('resim', function(data, cb)
                 else
                     local text = lang[langSetting]["photoError"]
                     if Config.Notify == 'QBCore' then
-                        ESX.ShowNotification(text)
+                        TriggerClientEvent('QBCore:Notify',src,(text) 'success',5000)
                     elseif Config.Notify == 'mythic' then
                         exports['mythic_notify']:SendAlert('error', text, 2500)
                     end
@@ -253,8 +253,8 @@ RegisterCommand("tabletzoom", function(source, args)
     if PlayerData.job and PlayerData.job.name == "police"  then
         if args[1] == nil then
             local text = lang[langSetting]["zoomSettingNilError"]
-            if Config.Notify == 'esx' then
-                ESX.ShowNotification(text)
+            if Config.Notify == 'QBCore' then
+                TriggerClientEvent('QBCore:Notify', src, (text), 'error', 5000)
             elseif Config.Notify == 'mythic' then
                 exports['mythic_notify']:SendAlert('error', text, 2500)
             end
@@ -262,22 +262,22 @@ RegisterCommand("tabletzoom", function(source, args)
 
         if tonumber(args[1]) < 50 then
             local text = lang[langSetting]["zoomSettingMinError"]
-            if Config.Notify == 'esx' then
-                ESX.ShowNotification(text)
+            if Config.Notify == 'QBCore' then
+                TriggerClientEvent('QBCore:Notify', src, (text), 'error', 5000)
             elseif Config.Notify == 'mythic' then
                 exports['mythic_notify']:SendAlert('error', text, 2500)
             end
         elseif tonumber(args[1]) > 100 then
             local text = lang[langSetting]["zoomSettingMaxError"]
-            if Config.Notify == 'esx' then
-                ESX.ShowNotification(text)
+            if Config.Notify == 'QBCore' then
+                TriggerClientEvent('QBCore:Notify', src, (text), 'error', 5000)
             elseif Config.Notify == 'mythic' then
                 exports['mythic_notify']:SendAlert('error', text, 2500)
             end
         else
             local text = lang[langSetting]["zoomSettingConfirm"]
-            if Config.Notify == 'esx' then
-                ESX.ShowNotification(text)
+            if Config.Notify == 'QBCore' then
+                TriggerClientEvent('QBCore:Notify', src, (text), 'success', 5000)
             elseif Config.Notify == 'mythic' then
                 exports['mythic_notify']:SendAlert('success', text, 2500)
             end
@@ -285,8 +285,8 @@ RegisterCommand("tabletzoom", function(source, args)
         end
     else
         local text = lang[langSetting]["zoomSettingNotPolice"]
-        if Config.Notify == 'esx' then
-            ESX.ShowNotification(text)
+        if Config.Notify == 'QBCore' then
+                TriggerClientEvent('QBCore:Notify', src, (text), 'success', 5000)
         elseif Config.Notify == 'mythic' then
             exports['mythic_notify']:SendAlert('error', text, 2500)
         end
