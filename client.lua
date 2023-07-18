@@ -8,7 +8,7 @@ local QBCore = exports['qb-core']:GetCoreObject()
 		Citizen.Wait(100)
 	end
     coreLoaded = true
-	while QBCore.Functions.GetPlayerData().job == nil do Citizen.Wait(100) end
+	while QBCore.Functions.GetPlayerData().job == nil do Citizen.Wait(100) end)
     firstLogin()
 end)
 
