@@ -1,4 +1,4 @@
-fx_version 'bodacious'
+fx_version 'cerulean'
 game 'gta5'
 
 shared_script 'config.lua'
@@ -20,3 +20,5 @@ files {
 	'ui/js/*.js',
 	'ui/img/*.png',
 }
+
+lua54 'yes'
