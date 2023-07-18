@@ -3,6 +3,7 @@ local nuiFocus = false
 local tab = 0
 local PlayerData = {}
 local QBCore = exports['qb-core']:GetCoreObject()
+Citizen.CreateThread(function()
 	while QBCore == nil do
 		TriggerEvent('QBCore:GetCoreObject', function(obj) QBCore = obj end)
 		Citizen.Wait(100)
