@@ -1,5 +1,7 @@
 # Fivem TGIANN-MDT v2 For QBCore 
 
+TAM BİTMEDİ.....
+
 **Requirements**
 * fivem-mysql-async
 * qb-framework
