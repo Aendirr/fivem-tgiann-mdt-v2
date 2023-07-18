@@ -5,7 +5,7 @@ local PlayerData = {}
 local QBCore = exports['qb-core']:GetCoreObject()
 Citizen.CreateThread(function()
 	while QBCore == nil do
-		TriggerEvent('QBCore:GetCoreObject', function(obj) QBCore = obj end)
+		TriggerEvent('QBCore:GetObject', function(obj) QBCore = obj end)
 		Citizen.Wait(100)
 	end
     coreLoaded = true
