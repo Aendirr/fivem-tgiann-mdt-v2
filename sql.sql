@@ -11,8 +11,8 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 
-ALTER TABLE `users` ADD COLUMN `aranma` mediumtext DEFAULT "[]";
-ALTER TABLE `users` ADD COLUMN `photo` mediumtext NULL;
+ALTER TABLE `players` ADD COLUMN `aranma` mediumtext DEFAULT "[]";
+ALTER TABLE `players` ADD COLUMN `photo` mediumtext NULL;
 
 -- tablo yapısı dökülüyor qbus.tgiann_mdt_arananlar
 CREATE TABLE IF NOT EXISTS `tgiann_mdt_arananlar` (
