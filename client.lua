@@ -2,31 +2,30 @@ local coreLoaded = false
 local nuiFocus = false
 local tab = 0
 local PlayerData = {}
-ESX = nil
-Citizen.CreateThread(function()
-	while ESX == nil do
-		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+local QBCore = exports['qb-core']:GetCoreObject()
+	while QBCore == nil do
+		TriggerEvent('QBCore:GetCoreObject', function(obj) QBCore = obj end)
 		Citizen.Wait(100)
 	end
     coreLoaded = true
-	while ESX.GetPlayerData().job == nil do Citizen.Wait(100) end
+	while QBCore.Functions.GetPlayerData().job == nil do Citizen.Wait(100) end
     firstLogin()
 end)
 
-RegisterNetEvent('esx:playerLoaded')
-AddEventHandler('esx:playerLoaded', function()
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded')
+AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
     firstLogin()
 end)
 
-RegisterNetEvent('esx:setJob')
-AddEventHandler('esx:setJob', function(job)
+RegisterNetEvent('QBCore:Client:SetJob')
+AddEventHandler('QBCore:Client:SetJob', function(job)
     PlayerData.job = job
     firstLogin()
 end)
 
 function firstLogin()
-    PlayerData = ESX.GetPlayerData()
-    ESX.TriggerServerCallback("tgiann-mdtv2:ilk-data", function(result, items, playerName)
+    PlayerData = QBcore.Functions.GetPlayerData()
+    QBCore.Functions.TriggerCallback("tgiann-mdtv2:ilk-data", function(result, items, playerName)
         local firstData = {}
         firstData.name = playerName
         firstData.rank = PlayerData.job.label
@@ -43,7 +42,7 @@ end
 
 RegisterNUICallback('sorgula', function(data, cb)
     local sorguData = nil
-    ESX.TriggerServerCallback("tgiann-mdtv2:sorgula", function(result)
+    QBCore.Functions.TriggerCallback("tgiann-mdtv2:sorgula", function(result)
         sorguData = result
     end, data)
     while sorguData == nil do Citizen.Wait(0) end
@@ -52,7 +51,7 @@ end)
 
 RegisterNUICallback('photo', function(data, cb)
     local cbComplated = false
-    ESX.TriggerServerCallback("tgiann-mdtv2:photo", function(result)
+    QBCore.Functions.TriggerCallback("tgiann-mdtv2:photo", function(result)
         sorguData = result
         cbComplated = true
     end, data)
@@ -69,7 +68,7 @@ local olaylarDataTime = 0
 RegisterNUICallback('olaylardata', function(data, cb)
     if GetGameTimer() > olaylarDataTime or olaylarDataTime == 0 then
         olaylarDataTime = GetGameTimer() + 30000
-        ESX.TriggerServerCallback("tgiann-mdtv2:olaylardata", function(result)
+        QBCore.Functions.TriggerCallback("tgiann-mdtv2:olaylardata", function(result)
             olaylarDataLast = result
             cb(result)
         end)
@@ -83,7 +82,7 @@ local sabikaDataTime = 0
 RegisterNUICallback('sabikadata', function(data, cb)
     if GetGameTimer() > sabikaDataTime or sabikaDataTime == 0 then
         sabikaDataTime = GetGameTimer() + 30000
-        ESX.TriggerServerCallback("tgiann-mdtv2:sabikadata", function(result)
+        QBCore.Functions.TriggerCallback("tgiann-mdtv2:sabikadata", function(result)
             sabikaDataLast = result
             cb(result)
         end, data.id)
@@ -117,7 +116,7 @@ RegisterNUICallback('resim', function(data, cb)
                     TriggerServerEvent("tgiann-mdtv2:setavatar", url, data.id)
                 else
                     local text = lang[langSetting]["photoError"]
-                    if Config.Notify == 'esx' then
+                    if Config.Notify == 'QBCore' then
                         ESX.ShowNotification(text)
                     elseif Config.Notify == 'mythic' then
                         exports['mythic_notify']:SendAlert('error', text, 2500)
@@ -202,13 +201,13 @@ RegisterNUICallback('aranmakaldir', function(data, cb)
 end)
 
 RegisterNUICallback('arananlar', function(data, cb)
-    ESX.TriggerServerCallback("tgiann-mdtv2:arananlar", function(result)
+    QBCore.Functions.TriggerCallback("tgiann-mdtv2:arananlar", function(result)
         cb(result)
     end)
 end)
 
 RegisterNUICallback('ev', function(data, cb)
-    ESX.TriggerServerCallback("tgiann-mdtv2:ev", function(result)
+    QBCore.Functions.TriggerCallback("tgiann-mdtv2:ev", function(result)
         cb(result)
     end,data.id)
 end)
@@ -241,7 +240,7 @@ AddEventHandler('onResourceStop', function(resourceName)
 end)
 
 RegisterNUICallback('olayara', function(data, cb)
-    ESX.TriggerServerCallback("tgiann-mdtv2:olayara", function(result)
+    QBCore.Functions.TriggerCallback("tgiann-mdtv2:olayara", function(result)
         cb(result)
     end, data.id)
 end)
