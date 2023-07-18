@@ -1,10 +1,9 @@
-# Fivem TGIANN-MDT v2
+# Fivem TGIANN-MDT v2 For QBCore 
 
 **Requirements**
 * fivem-mysql-async
-* es_extended
-* esx_vehicleshop
-* esx_society
+* qb-framework
+* qb-vehicleshops
 
 **Languages**
 * Turkish
