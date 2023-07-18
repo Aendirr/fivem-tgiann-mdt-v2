@@ -17,8 +17,8 @@ AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
     firstLogin()
 end)
 
-RegisterNetEvent('QBCore:Client:SetJob')
-AddEventHandler('QBCore:Client:SetJob', function(job)
+RegisterNetEvent('QBCore:Client:OnJobUpdate')
+AddEventHandler('QBCore:Client:OnJobUpdate', function(job)
     PlayerData.job = job
     firstLogin()
 end)
