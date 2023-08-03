@@ -1,17 +1,12 @@
+local QBCore = exports['qb-core']:GetCoreObject()
+
 local coreLoaded = false
 local nuiFocus = false
+local active = false
 local tab = 0
+coreLoaded = true
+
 local PlayerData = {}
-local QBCore = exports['qb-core']:GetCoreObject()
-Citizen.CreateThread(function()
-	while QBCore == nil do
-		TriggerEvent('QBCore:GetObject', function(obj) QBCore = obj end)
-		Citizen.Wait(100)
-	end
-    coreLoaded = true
-	while QBCore.Functions.GetPlayerData().job == nil do Citizen.Wait(100) end)
-    firstLogin()
-end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded')
 AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
@@ -20,44 +15,35 @@ end)
 
 RegisterNetEvent('QBCore:Client:OnJobUpdate')
 AddEventHandler('QBCore:Client:OnJobUpdate', function(job)
-    PlayerData.job = job
     firstLogin()
 end)
 
 function firstLogin()
-    PlayerData = QBcore.Functions.GetPlayerData()
-    QBCore.Functions.TriggerCallback("tgiann-mdtv2:ilk-data", function(result, items, playerName)
+    PlayerData = QBCore.Functions.GetPlayerData()
+    if PlayerData.job.name == "police" then
         local firstData = {}
-        firstData.name = playerName
-        firstData.rank = PlayerData.job.label
+        firstData.name = PlayerData.charinfo.firstname .. " " .. PlayerData.charinfo.lastname
+        firstData.rank = PlayerData.job["grade"].name
+        --firstData.rank = QBCore.Shared.Jobs["police"]["grade"][PlayerData.job.grade].label
         firstData.items = {}
-        for item, data in pairs(items) do
+        for item, data in pairs(QBCore.Shared.Items) do
             table.insert(firstData.items, data.label)
         end
-        firstData.players = result
-        firstData.lang = lang[langSetting]
-        firstData.resourceName = GetCurrentResourceName()
-        SendNUIMessage({type = 'ilk-bilgi', data = firstData})
-    end)
-end
+        QBCore.Functions.TriggerCallback("tgiann-mdtv2:ilk-data", function(result)
+            firstData.players = result
+            SendNUIMessage({type = 'ilk-bilgi', data = firstData})
+        end)
+    end
+end 
 
 RegisterNUICallback('sorgula', function(data, cb)
     local sorguData = nil
     QBCore.Functions.TriggerCallback("tgiann-mdtv2:sorgula", function(result)
         sorguData = result
-    end, data)
-    while sorguData == nil do Citizen.Wait(0) end
-    cb(sorguData)
-end)
 
-RegisterNUICallback('photo', function(data, cb)
-    local cbComplated = false
-    QBCore.Functions.TriggerCallback("tgiann-mdtv2:photo", function(result)
-        sorguData = result
-        cbComplated = true
-    end, data)
-    while not cbComplated do Citizen.Wait(0) end
-    cb(sorguData)
+        while sorguData == nil do Citizen.Wait(0) end
+        cb(sorguData)
+    end, data)   
 end)
 
 RegisterNUICallback('cezakaydetclient', function(data)
@@ -67,15 +53,15 @@ end)
 local olaylarDataLast = nil
 local olaylarDataTime = 0
 RegisterNUICallback('olaylardata', function(data, cb)
-    if GetGameTimer() > olaylarDataTime or olaylarDataTime == 0 then
+    -- if GetGameTimer() > olaylarDataTime or olaylarDataTime == 0 then
         olaylarDataTime = GetGameTimer() + 30000
         QBCore.Functions.TriggerCallback("tgiann-mdtv2:olaylardata", function(result)
             olaylarDataLast = result
             cb(result)
         end)
-    else
-        cb(olaylarDataLast)
-    end
+    -- else
+    --     cb(olaylarDataLast)
+    -- end
 end)
 
 local sabikaDataLast = nil
@@ -106,22 +92,17 @@ RegisterNUICallback('resim', function(data, cb)
         if nuiFocus then openClose() end
         while takePhoto do
             Citizen.Wait(0)
-            if IsControlJustPressed(1, 177) then -- CANCEL
+            if IsControlJustPressed(1, 177) then
                 DestroyMobilePhone()
                 CellCamActivate(false, false)
                 takePhoto = false
-            elseif IsControlJustPressed(1, 176) then -- TAKE.. PIC
-                local url = screenShot()
+            elseif IsControlJustPressed(1, 176) then
+                local url = exports['qb-smallresources']:screenShot()
                 if url then
                     SendNUIMessage({type = 'user-avatar', url = url})
                     TriggerServerEvent("tgiann-mdtv2:setavatar", url, data.id)
                 else
-                    local text = lang[langSetting]["photoError"]
-                    if Config.Notify == 'QBCore' then
-                        TriggerClientEvent('QBCore:Notify',src,(text) 'success',5000)
-                    elseif Config.Notify == 'mythic' then
-                        exports['mythic_notify']:SendAlert('error', text, 2500)
-                    end
+                    QBCore.Functions.Notify("Resim Çekilemedi!", "error")
                 end
                 openClose()
                 DestroyMobilePhone()
@@ -137,34 +118,6 @@ RegisterNUICallback('resim', function(data, cb)
         end
     end
 end)
-
-local screenShotCD = 0
-function screenShot()
-    local callbackData = nil
-    screenShotCD = 0
-    exports['screenshot-basic']:requestScreenshotUpload(Config.Webhook, "files[]", function(data)
-        callbackData = json.decode(data)
-    end)
-    while callbackData == nil do
-        Citizen.Wait(1000)
-        screenShotCD = screenShotCD + 1
-        if screenShotCD > 10 then
-            break
-        end
-    end
-
-    if callbackData then
-        if callbackData.message then
-            print(lang[langSetting]["f8error"].." "..callbackData.message)
-            return false
-        else
-            return callbackData.attachments[1].proxy_url
-        end
-    else
-        print(lang[langSetting]["f8error"].." "..lang[langSetting]["photoError"])
-        return lang[langSetting]["photoError"]
-    end
-end
 
 function openClose()
     nuiFocus = not nuiFocus
@@ -189,7 +142,7 @@ function startAnim()
         Citizen.Wait(0)
     end
     TaskPlayAnim(PlayerPedId(), "amb@code_human_in_bus_passenger_idles@female@tablet@idle_a", "idle_a" ,8.0, -8.0, -1, 50, 0, false, false, false)
-    tab = CreateObject(GetHashKey("prop_cs_tablet"), 0, 0, 0, true, true, true)
+    tab = CreateObject(`prop_cs_tablet`, 0, 0, 0, true, true, true)
 	AttachEntityToEntity(tab, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), 28422), -0.05, 0.0, 0.0, 0.0, 0.0, 0.0, true, true, false, true, 1, true)
 end
 
@@ -217,16 +170,25 @@ RegisterNUICallback('olaysil', function(data, cb)
     TriggerServerEvent("tgiann-mdtv2:olaysil", data.id)
 end)
 
-RegisterCommand(Config.KeyMapping..'mdtkeymapping', function()
-    TriggerEvent('tgiann-mdtv2:open')
+RegisterNetEvent('tgiann-denizalti:emp')
+AddEventHandler('tgiann-denizalti:emp', function(_active)
+	active = _active
+	if active then
+        if nuiFocus then
+            openClose()
+        end
+  	end
 end)
-RegisterKeyMapping(Config.KeyMapping..'mdtkeymapping', lang[langSetting]["keyMappingHelp"], 'keyboard', Config.KeyMapping)
 
 RegisterNetEvent("tgiann-mdtv2:open")
 AddEventHandler("tgiann-mdtv2:open", function()
     if PlayerData.job == nil then firstLogin() end
 	if PlayerData.job and PlayerData.job.name == "police"  then
-        openClose()
+		if not active then
+			openClose()
+		else
+			QBCore.Functions.Notify("Şuan Tableti Kullanamazsın!", "error")
+		end
 	end
 end)
 
@@ -234,9 +196,38 @@ RegisterNUICallback('kapat', function(data, cb)
     if nuiFocus then openClose() end
 end)
 
+RegisterNUICallback('carbodycam', function(data, cb)
+    if nuiFocus then openClose() end
+    TriggerEvent("carbodycam")
+end)
+
 AddEventHandler('onResourceStop', function(resourceName)
     if (GetCurrentResourceName() == resourceName) then
         if nuiFocus then openClose() end
+    end
+end)
+
+RegisterNUICallback('cadir-r', function(data, cb)
+    if exports["tgiann-ev"]:cadirRaid(data.id) then
+        if nuiFocus then openClose() end
+    else
+        SendNUIMessage({type = 'bildirim', msg = "Çadır Bölgesinde Olman Lazım!", durum = 'hata'})
+    end
+end)
+
+RegisterNUICallback('motel-r', function(data, cb)
+    if exports["tgiann-motels"]:motelRaid(data.id) then
+        if nuiFocus then openClose() end
+    else
+        SendNUIMessage({type = 'bildirim', msg = "Motel Odasının İçinde Olman Lazım!", durum = 'hata'})
+    end
+end)
+
+RegisterNUICallback('ev-r', function(data, cb)
+    if exports["tgiann-ev"]:evRaid(data.ev) then
+        if nuiFocus then openClose() end
+    else
+        SendNUIMessage({type = 'bildirim', msg = "Evin Yakınlarında Olman Lazım!", durum = 'hata'})
     end
 end)
 
@@ -246,50 +237,20 @@ RegisterNUICallback('olayara', function(data, cb)
     end, data.id)
 end)
 
-Citizen.CreateThread(function()
-    TriggerEvent('chat:addSuggestion', '/tabletzoom', lang[langSetting]["zoomSetting"], {{ name=lang[langSetting]["zoomSettingName"], help=lang[langSetting]["zoomSettingHelp"]}})
-end)
-
-RegisterCommand("tabletzoom", function(source, args)
+RegisterNetEvent("tgiann-mdtv2:zoom")
+AddEventHandler("tgiann-mdtv2:zoom", function(data)
     if PlayerData.job and PlayerData.job.name == "police"  then
-        if args[1] == nil then
-            local text = lang[langSetting]["zoomSettingNilError"]
-            if Config.Notify == 'QBCore' then
-                TriggerClientEvent('QBCore:Notify', src, (text), 'error', 5000)
-            elseif Config.Notify == 'mythic' then
-                exports['mythic_notify']:SendAlert('error', text, 2500)
-            end
+        if data == nil then
+            QBCore.Functions.Notify("Bir Değer Girmedin! (50-100)", "error")
         end
 
-        if tonumber(args[1]) < 50 then
-            local text = lang[langSetting]["zoomSettingMinError"]
-            if Config.Notify == 'QBCore' then
-                TriggerClientEvent('QBCore:Notify', src, (text), 'error', 5000)
-            elseif Config.Notify == 'mythic' then
-                exports['mythic_notify']:SendAlert('error', text, 2500)
-            end
-        elseif tonumber(args[1]) > 100 then
-            local text = lang[langSetting]["zoomSettingMaxError"]
-            if Config.Notify == 'QBCore' then
-                TriggerClientEvent('QBCore:Notify', src, (text), 'error', 5000)
-            elseif Config.Notify == 'mythic' then
-                exports['mythic_notify']:SendAlert('error', text, 2500)
-            end
+        if tonumber(data) < 50 then
+            QBCore.Functions.Notify("50'den Küçük Bir Değer Giremezsin", "error")
+        elseif tonumber(data) > 100 then
+            QBCore.Functions.Notify("100'den Büyük Bir Değer Giremezsin", "error")
         else
-            local text = lang[langSetting]["zoomSettingConfirm"]
-            if Config.Notify == 'QBCore' then
-                TriggerClientEvent('QBCore:Notify', src, (text), 'success', 5000)
-            elseif Config.Notify == 'mythic' then
-                exports['mythic_notify']:SendAlert('success', text, 2500)
-            end
-            SendNUIMessage({type = 'zoom', val = args[1]})
-        end
-    else
-        local text = lang[langSetting]["zoomSettingNotPolice"]
-        if Config.Notify == 'QBCore' then
-                TriggerClientEvent('QBCore:Notify', src, (text), 'success', 5000)
-        elseif Config.Notify == 'mythic' then
-            exports['mythic_notify']:SendAlert('error', text, 2500)
+            QBCore.Functions.Notify("Tablet Boyutu Ayarlandı", "success")
+            SendNUIMessage({type = 'zoom', val = data})
         end
     end
 end)
